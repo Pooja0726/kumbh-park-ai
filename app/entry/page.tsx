@@ -22,7 +22,11 @@ export default function EntryPage() {
   const [destination, setDestination] = useState<Destination>("Sangam Ghat");
   const [language, setLanguage] = useState<"hi" | "en">("hi");
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState<{ passCode: string } | null>(null);
+  const [success, setSuccess] = useState<{
+    passCode: string;
+    smsSent: boolean;
+    smsMode: "live" | "mock";
+  } | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -47,8 +51,18 @@ export default function EntryPage() {
         toast.error(data.error ?? "Registration failed");
         return;
       }
-      setSuccess({ passCode: data.passCode });
-      toast.success("Vehicle registered! Parking pass generated.");
+      setSuccess({
+        passCode: data.passCode,
+        smsSent: data.sms?.sent ?? false,
+        smsMode: data.sms?.mode ?? "mock",
+      });
+      if (data.sms?.sent) {
+        toast.success("Vehicle registered! SMS sent to your phone.");
+      } else if (data.sms?.mode === "mock") {
+        toast.success("Vehicle registered! (SMS simulated — see note below)");
+      } else {
+        toast.success("Vehicle registered! Parking pass generated.");
+      }
       sessionStorage.setItem("kumbh-pass", data.passCode);
     } catch {
       toast.error("Network error. Please try again.");
@@ -66,9 +80,17 @@ export default function EntryPage() {
         <p className="mt-4 rounded-lg bg-kumbh-50 px-4 py-3 font-mono text-lg font-bold text-kumbh-800">
           {success.passCode}
         </p>
-        <p className="mt-2 text-sm text-gray-500">
-          SMS & WhatsApp alert sent to {phone}
-        </p>
+        {success.smsSent ? (
+          <p className="mt-2 text-sm text-emerald-700">
+            SMS sent to {phone}
+          </p>
+        ) : (
+          <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            SMS not sent to your phone — notifications are <strong>simulated</strong> until
+            Twilio is configured in <code className="text-xs">.env.local</code>. See README.
+            Alerts appear on the Dashboard.
+          </p>
+        )}
         <button
           type="button"
           onClick={() => router.push(`/my-pass?code=${success.passCode}`)}
@@ -86,7 +108,7 @@ export default function EntryPage() {
         <h1 className="text-2xl font-bold text-gray-900">Vehicle Entry Gate</h1>
         <p className="text-kumbh-700">वाहन प्रवेश · कैमरा स्कैन</p>
         <p className="mt-1 text-sm text-gray-500">
-          Scan plate, register phone, get assigned parking slot
+          Capture plate photo, scan number, register phone, get parking slot
         </p>
       </div>
 

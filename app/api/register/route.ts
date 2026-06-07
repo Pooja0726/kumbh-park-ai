@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { registerVehicle } from "@/lib/store";
+import { sendSms, isSmsConfigured } from "@/lib/sms-service";
 import type { Destination } from "@/lib/types";
 
 export async function POST(request: Request) {
@@ -26,12 +27,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: result.error }, { status: 400 });
   }
 
+  const smsText =
+    language === "hi"
+      ? `महाकुंभ पार्किंग: वाहन ${result.vehicleNumber} पंजीकृत। पास: ${result.passCode}। स्लॉट: ${result.slotId}।`
+      : `KumbhPark: Vehicle ${result.vehicleNumber} registered. Pass: ${result.passCode}. Slot: ${result.slotId}.`;
+
+  const sms = await sendSms(phone, smsText);
+
   return NextResponse.json({
     passCode: result.passCode,
     vehicleNumber: result.vehicleNumber,
     zoneId: result.zoneId,
     slotId: result.slotId,
     destination: result.destination,
+    sms: {
+      configured: isSmsConfigured(),
+      sent: sms.sent,
+      mode: sms.mode,
+      error: sms.error,
+    },
     message:
       language === "hi"
         ? `पार्किंग पास जारी। स्लॉट: ${result.slotId}`
