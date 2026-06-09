@@ -1,11 +1,11 @@
-# KumbhPark AI
+# Smart Parking System
 
-Smart parking and mobility management system for **Mahakumbh** — ANPR entry, mis-park detection, tiered owner alerts, and authority command dashboard.
+AI-powered smart parking management system — ANPR entry, mis-park detection, tiered owner alerts, and authority command dashboard.
 
 ## Features
 
 - **Entry Gate** (`/entry`) — Webcam plate scan (mock OCR) + vehicle registration
-- **Parking Pass** (`/my-pass`) — QR pass with slot assignment and ghat route guide
+- **Parking Pass** (`/my-pass`) — QR pass with slot assignment and route guide
 - **Live Lots** (`/lots`) — Real-time occupancy across parking zones
 - **Command Dashboard** (`/dashboard`) — Violations, notification log, zone overview
 - **Zone Monitor** (`/dashboard/zone/[id]`) — Interactive grid, simulate mis-park alerts
@@ -14,7 +14,6 @@ Smart parking and mobility management system for **Mahakumbh** — ANPR entry, m
 ## Quick Start
 
 ```bash
-cd kumbh-park-ai
 npm install
 npm run dev
 ```
@@ -25,15 +24,17 @@ Open [http://localhost:3000](http://localhost:3000)
 
 1. Go to **Entry** → Start camera → Scan plate (or enter `UP32AB1234` manually)
 2. Enter phone + destination → Get parking pass
-3. Open **My Pass** to see QR and route to ghat
+3. Open **My Pass** to see QR and route info
 4. Open **Dashboard → Zone** → Click occupied slot → Trigger mis-park
 5. Watch SMS/WhatsApp/call logs on dashboard → Escalate to marshal
+
+> **Note:** The dashboard is pre-seeded with sample vehicles and violations so it works with real-time data out of the box.
 
 ## Tech Stack
 
 - Next.js 15 (App Router)
 - TypeScript + Tailwind CSS
-- In-memory store (swap for PostgreSQL in production)
+- In-memory store with auto-seed (swap for PostgreSQL in production)
 - Mock OCR & notifications (swap for EasyOCR + Twilio)
 
 ## API Routes

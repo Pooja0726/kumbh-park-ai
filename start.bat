@@ -1,10 +1,10 @@
 @echo off
-title KumbhPark AI - Dev Server
+title Smart Parking System - Dev Server
 cd /d "%~dp0"
 
 echo.
 echo ========================================
-echo   KumbhPark AI - Starting...
+echo   Smart Parking System - Starting...
 echo ========================================
 echo.
 

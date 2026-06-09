@@ -69,20 +69,20 @@ export function createAlertMessage(
 
   const messages: Record<string, Record<string, string>> = {
     'mis-park': {
-      en: `⚠️ ALERT: Vehicle ${vehicleNumber} is mis-parked. Please relocate immediately. Contact: 8800XXXXX - KumbhPark AI`,
-      hi: `⚠️ सचेत: वाहन ${vehicleNumber} गलत स्थान पर पार्क है। कृपया तुरंत स्थानांतरित करें। संपर्क: 8800XXXXX - KumbhPark AI`,
+      en: `⚠️ ALERT: Vehicle ${vehicleNumber} is mis-parked. Please relocate immediately. Contact: 8800XXXXX - Smart Parking System`,
+      hi: `⚠️ सचेत: वाहन ${vehicleNumber} गलत स्थान पर पार्क है। कृपया तुरंत स्थानांतरित करें। संपर्क: 8800XXXXX - Smart Parking System`,
     },
     entry: {
-      en: `✅ Welcome to Mahakumbh! Vehicle ${vehicleNumber} registered. Parking Slot: ${slot}. Show QR pass at gate. - KumbhPark AI`,
-      hi: `✅ महाकुंभ में आपका स्वागत है! वाहन ${vehicleNumber} पंजीकृत। पार्किंग स्लॉट: ${slot}। गेट पर QR पास दिखाएं। - KumbhPark AI`,
+      en: `✅ Welcome! Vehicle ${vehicleNumber} registered. Parking Slot: ${slot}. Show QR pass at gate. - Smart Parking System`,
+      hi: `✅ स्वागत है! वाहन ${vehicleNumber} पंजीकृत। पार्किंग स्लॉट: ${slot}। गेट पर QR पास दिखाएं। - Smart Parking System`,
     },
     exit: {
-      en: `👋 Thank you for visiting Mahakumbh! Vehicle ${vehicleNumber} exit recorded. Have a blessed journey! - KumbhPark AI`,
-      hi: `👋 महाकुंभ आने के लिए धन्यवाद! वाहन ${vehicleNumber} प्रस्थान दर्ज। आपकी यात्रा आशीर्वादित हो! - KumbhPark AI`,
+      en: `👋 Thank you for visiting! Vehicle ${vehicleNumber} exit recorded. Have a safe journey! - Smart Parking System`,
+      hi: `👋 आने के लिए धन्यवाद! वाहन ${vehicleNumber} प्रस्थान दर्ज। आपकी यात्रा सुरक्षित हो! - Smart Parking System`,
     },
   };
 
-  return messages[alertType]?.[language] || messages[alertType]?.['en'] || 'KumbhPark Message';
+  return messages[alertType]?.[language] || messages[alertType]?.['en'] || 'Smart Parking Message';
 }
 
 /**
@@ -198,4 +198,83 @@ export function sendSMSAsync(options: SMSOptions): void {
       console.error('❌ SMS delivery failed:', result.error);
     }
   });
+}
+
+/**
+ * Check if Twilio credentials are configured in environment
+ */
+export function isSmsConfigured(): boolean {
+  return !!(
+    process.env.TWILIO_ACCOUNT_SID &&
+    process.env.TWILIO_AUTH_TOKEN &&
+    process.env.TWILIO_PHONE_NUMBER
+  );
+}
+
+/**
+ * Send SMS server-side via Twilio REST API directly.
+ * Used by API routes (register/route.ts) — does NOT use fetch('/api/send-sms')
+ * because Next.js API routes cannot call other API routes via relative URL.
+ *
+ * Falls back to mock mode when Twilio is not configured.
+ */
+export async function sendSms(
+  phone: string,
+  message: string
+): Promise<{ sent: boolean; mode: 'live' | 'mock'; error?: string }> {
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  const fromNumber = process.env.TWILIO_PHONE_NUMBER;
+
+  if (!accountSid || !authToken || !fromNumber) {
+    console.warn('⚠️ Twilio not configured — running in mock SMS mode');
+    console.log(`📱 [MOCK SMS] To: ${phone}`);
+    console.log(`💬 [MOCK SMS] Message: ${message}`);
+    return { sent: false, mode: 'mock' };
+  }
+
+  // Format phone number
+  const formattedPhone = formatPhoneNumber(phone);
+  console.log(`📱 [SMS] Sending to ${formattedPhone} via Twilio...`);
+
+  try {
+    const auth = Buffer.from(`${accountSid}:${authToken}`).toString('base64');
+
+    const twilioResponse = await fetch(
+      `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${auth}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          From: fromNumber,
+          To: formattedPhone,
+          Body: message,
+        }).toString(),
+      }
+    );
+
+    const data = await twilioResponse.json();
+
+    if (!twilioResponse.ok) {
+      console.error('❌ Twilio API error:', data);
+      return {
+        sent: false,
+        mode: 'live',
+        error: data.message || `Twilio error ${twilioResponse.status}`,
+      };
+    }
+
+    console.log('✅ SMS sent! SID:', data.sid);
+    return { sent: true, mode: 'live' };
+  } catch (error) {
+    console.error('❌ SMS send error:', error);
+    return {
+      sent: false,
+      mode: 'live',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
 }

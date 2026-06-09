@@ -14,7 +14,7 @@ interface CameraCaptureProps {
   onPlateDetected: (plateNumber: string, confidence: number) => void;
 }
 
-export default function CameraCapture({ onPlateDetected }: CameraCaptureProps) {
+export function CameraCapture({ onPlateDetected }: CameraCaptureProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -202,30 +202,36 @@ export default function CameraCapture({ onPlateDetected }: CameraCaptureProps) {
       )}
 
       {/* Camera Section */}
-      <div className="w-full max-w-md bg-gray-900 rounded-lg overflow-hidden border-2 border-orange-600">
-        {!isCameraActive ? (
+      <div className="w-full max-w-md bg-gray-900 rounded-lg overflow-hidden border-2 border-orange-600 relative">
+        {/* Placeholder - shown when camera is inactive */}
+        {!isCameraActive && (
           <div className="aspect-video flex flex-col items-center justify-center gap-4 bg-gradient-to-b from-gray-900 to-gray-800">
             <Camera className="w-16 h-16 text-orange-500 opacity-50" />
             <p className="text-gray-300 text-center px-4 text-sm">
               📍 Point camera at vehicle number plate
             </p>
           </div>
-        ) : (
-          <>
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              className="w-full h-auto"
-            />
-            {/* Plate Guide Overlay */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-              <div className="w-80 h-32 border-4 border-yellow-400 rounded-lg opacity-70 shadow-lg"></div>
+        )}
+
+        {/* Video element - always in DOM so ref is available, hidden when inactive */}
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className={`w-full h-auto ${isCameraActive ? 'block' : 'hidden'}`}
+        />
+
+        {/* Plate Guide Overlay - shown when camera is active */}
+        {isCameraActive && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div>
+              <div className="w-72 h-24 border-4 border-yellow-400 rounded-lg opacity-70 shadow-lg"></div>
               <p className="text-yellow-300 text-center mt-2 text-xs font-bold bg-black/50 px-2 py-1 rounded">
                 Center plate in frame
               </p>
             </div>
-          </>
+          </div>
         )}
       </div>
 

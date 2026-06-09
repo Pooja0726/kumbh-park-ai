@@ -1,38 +1,43 @@
+"use client";
+
 import { AlertTriangle, Car, ParkingCircle, TrendingUp } from "lucide-react";
 import type { DashboardStats } from "@/lib/types";
 import { cn, occupancyColor } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 
 interface StatsCardsProps {
   stats: DashboardStats;
 }
 
 export function StatsCards({ stats }: StatsCardsProps) {
+  const t = useT();
+
   const cards = [
     {
-      label: "Occupancy",
+      label: t.statOccupancy,
       value: `${stats.occupancyPercent}%`,
-      sub: `${stats.occupiedSlots} / ${stats.totalSlots} slots`,
+      sub: `${stats.occupiedSlots} / ${stats.totalSlots} ${t.statSlots}`,
       icon: TrendingUp,
       color: occupancyColor(stats.occupancyPercent),
     },
     {
-      label: "Free Slots",
+      label: t.statFreeSlots,
       value: stats.freeSlots.toString(),
-      sub: "Available now",
+      sub: t.statFreeAvailable,
       icon: ParkingCircle,
       color: "text-emerald-600 bg-emerald-50",
     },
     {
-      label: "Mis-parked",
+      label: t.statMisparked,
       value: stats.misParkedSlots.toString(),
-      sub: "Needs attention",
+      sub: t.statMisparkedSub,
       icon: Car,
       color: "text-amber-600 bg-amber-50",
     },
     {
-      label: "Active Alerts",
+      label: t.statActiveAlerts,
       value: stats.activeViolations.toString(),
-      sub: "Unresolved violations",
+      sub: t.statAlertsSub,
       icon: AlertTriangle,
       color: "text-red-600 bg-red-50",
     },

@@ -1,11 +1,17 @@
+"use client";
+
 import Link from "next/link";
 import { Bus, MapPin, Users } from "lucide-react";
 import type { ParkingZone } from "@/lib/types";
 import { getZoneOccupancy } from "@/lib/parking-engine";
 import { cn, occupancyBarColor, occupancyColor } from "@/lib/utils";
+import { useLanguage, useT } from "@/lib/i18n";
 
 export function ZoneCard({ zone }: { zone: ParkingZone }) {
+  const { lang } = useLanguage();
+  const t = useT();
   const occ = getZoneOccupancy(zone);
+  const zoneName = lang === "hi" ? zone.nameHindi : zone.name;
 
   return (
     <Link
@@ -14,8 +20,7 @@ export function ZoneCard({ zone }: { zone: ParkingZone }) {
     >
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="font-semibold text-gray-900">{zone.name}</h3>
-          <p className="text-sm text-kumbh-700">{zone.nameHindi}</p>
+          <h3 className="font-semibold text-gray-900">{zoneName}</h3>
         </div>
         <span
           className={cn(
@@ -23,7 +28,7 @@ export function ZoneCard({ zone }: { zone: ParkingZone }) {
             occupancyColor(occ.percent)
           )}
         >
-          {occ.percent}% full
+          {occ.percent}% {t.zoneFull}
         </span>
       </div>
 
@@ -37,15 +42,15 @@ export function ZoneCard({ zone }: { zone: ParkingZone }) {
       <div className="mt-4 grid grid-cols-3 gap-2 text-xs text-gray-600">
         <span className="flex items-center gap-1">
           <Users className="h-3.5 w-3.5" />
-          {occ.free} free
+          {occ.free} {t.zoneFree}
         </span>
         <span className="flex items-center gap-1">
           <MapPin className="h-3.5 w-3.5" />
-          {zone.walkMinutesToGhat} min walk
+          {zone.walkMinutesToGhat} {t.zoneWalk}
         </span>
         <span className="flex items-center gap-1">
           <Bus className="h-3.5 w-3.5" />
-          Shuttle
+          {t.zoneShuttle}
         </span>
       </div>
     </Link>

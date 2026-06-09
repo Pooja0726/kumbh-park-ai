@@ -3,6 +3,7 @@
 import { AlertTriangle, Bell, Phone, Shield, X } from "lucide-react";
 import type { NotificationLog, Violation } from "@/lib/types";
 import { formatDateTime } from "@/lib/utils";
+import { useLanguage, useT } from "@/lib/i18n";
 
 interface ViolationAlertProps {
   violation: Violation;
@@ -17,19 +18,21 @@ const tierIcons = {
   marshal: Shield,
 };
 
-const tierLabels = {
-  sms: "SMS + WhatsApp sent",
-  call: "Auto-call triggered",
-  marshal: "Marshal dispatched",
-};
-
 export function ViolationAlert({
   violation,
   onEscalate,
   onResolve,
   compact = false,
 }: ViolationAlertProps) {
+  const { lang } = useLanguage();
+  const t = useT();
   const Icon = tierIcons[violation.tier];
+
+  const tierLabels = {
+    sms: t.violSmsSent,
+    call: t.violCallTriggered,
+    marshal: t.violMarshalDispatched,
+  };
 
   return (
     <div
@@ -60,10 +63,9 @@ export function ViolationAlert({
               {violation.zoneId} / {violation.slotId}
             </p>
             {!compact && (
-              <>
-                <p className="mt-1 text-sm text-gray-700">{violation.message}</p>
-                <p className="mt-0.5 text-sm text-kumbh-800">{violation.messageHindi}</p>
-              </>
+              <p className="mt-1 text-sm text-gray-700">
+                {lang === "hi" ? violation.messageHindi : violation.message}
+              </p>
             )}
             <div className="mt-2 flex items-center gap-1.5 text-xs text-gray-500">
               <Icon className="h-3.5 w-3.5" />
@@ -73,7 +75,7 @@ export function ViolationAlert({
         </div>
         {violation.resolved && (
           <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
-            Resolved
+            {t.violResolved}
           </span>
         )}
       </div>
@@ -86,7 +88,7 @@ export function ViolationAlert({
               onClick={() => onEscalate(violation.id)}
               className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700"
             >
-              Escalate Alert
+              {t.violEscalate}
             </button>
           )}
           {onResolve && (
@@ -95,7 +97,7 @@ export function ViolationAlert({
               onClick={() => onResolve(violation.id)}
               className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
             >
-              Mark Resolved
+              {t.violResolve}
             </button>
           )}
         </div>
@@ -105,9 +107,11 @@ export function ViolationAlert({
 }
 
 export function NotificationFeed({ logs }: { logs: NotificationLog[] }) {
+  const t = useT();
+
   if (logs.length === 0) {
     return (
-      <p className="text-sm text-gray-500">No notifications sent yet.</p>
+      <p className="text-sm text-gray-500">{t.violNoNotif}</p>
     );
   }
 
@@ -150,11 +154,13 @@ export function AlertToast({
   message: string;
   onClose: () => void;
 }) {
+  const t = useT();
+
   return (
     <div className="fixed bottom-20 right-4 z-50 flex max-w-sm items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 shadow-lg md:bottom-6">
       <Bell className="h-5 w-5 shrink-0 text-amber-600" />
       <div className="flex-1">
-        <p className="text-sm font-semibold text-amber-900">Alert Dispatched</p>
+        <p className="text-sm font-semibold text-amber-900">{t.violAlertDispatched}</p>
         <p className="text-sm text-amber-800">{message}</p>
       </div>
       <button type="button" onClick={onClose} className="text-amber-600 hover:text-amber-800">

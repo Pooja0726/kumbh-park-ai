@@ -48,7 +48,7 @@ export function assignBestZone(
 
 export function generatePassCode(vehicleNumber: string): string {
   const suffix = vehicleNumber.replace(/[^A-Z0-9]/gi, "").slice(-4);
-  return `KUMBH-${suffix}-${Date.now().toString(36).toUpperCase().slice(-4)}`;
+  return `PARK-${suffix}-${Date.now().toString(36).toUpperCase().slice(-4)}`;
 }
 
 export function formatSlotLabel(slot: ParkingSlot): string {
@@ -73,7 +73,7 @@ export function buildRegistration(
   language: "hi" | "en"
 ): VehicleRegistration {
   return {
-    id: `reg-${Date.now()}`,
+    id: `reg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     vehicleNumber: normalizePlate(vehicleNumber),
     phone,
     destination,

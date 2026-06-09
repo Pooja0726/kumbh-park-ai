@@ -5,8 +5,11 @@ import Link from "next/link";
 import { ArrowLeft, MapPin, Shield } from "lucide-react";
 import type { Violation } from "@/lib/types";
 import { formatDateTime } from "@/lib/utils";
+import { useLanguage, useT } from "@/lib/i18n";
 
 export default function MarshalPage() {
+  const t = useT();
+  const { lang } = useLanguage();
   const [violations, setViolations] = useState<Violation[]>([]);
 
   useEffect(() => {
@@ -31,7 +34,7 @@ export default function MarshalPage() {
         className="inline-flex items-center gap-1 text-sm text-kumbh-600"
       >
         <ArrowLeft className="h-4 w-4" />
-        Dashboard
+        {t.marshalBack}
       </Link>
 
       <div className="mt-4 flex items-center gap-3">
@@ -39,15 +42,15 @@ export default function MarshalPage() {
           <Shield className="h-6 w-6 text-red-700" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Marshal Dispatch</h1>
-          <p className="text-sm text-gray-500">Field operations · मार्शल दृश्य</p>
+          <h1 className="text-xl font-bold text-gray-900">{t.marshalTitle}</h1>
+          <p className="text-sm text-gray-500">{t.marshalSub}</p>
         </div>
       </div>
 
       <div className="mt-6 space-y-4">
         {violations.length === 0 ? (
           <div className="rounded-xl bg-emerald-50 p-8 text-center text-emerald-700">
-            No marshal dispatches pending
+            {t.marshalNone}
           </div>
         ) : (
           violations.map((v) => (
@@ -62,20 +65,22 @@ export default function MarshalPage() {
               <div className="flex items-start justify-between">
                 <p className="font-mono text-lg font-bold">{v.vehicleNumber}</p>
                 <span className="rounded bg-red-600 px-2 py-0.5 text-xs font-bold text-white">
-                  URGENT
+                  {t.marshalUrgent}
                 </span>
               </div>
               <div className="mt-2 flex items-center gap-1 text-sm text-gray-600">
                 <MapPin className="h-4 w-4" />
                 {v.zoneId} / {v.slotId}
               </div>
-              <p className="mt-2 text-sm">{v.messageHindi}</p>
+              <p className="mt-2 text-sm">
+                {lang === "hi" ? v.messageHindi : v.message}
+              </p>
               <p className="mt-1 text-xs text-gray-500">{formatDateTime(v.createdAt)}</p>
               <a
                 href={`tel:${v.phone}`}
                 className="mt-3 block rounded-lg bg-gray-900 py-2.5 text-center text-sm font-medium text-white"
               >
-                Call Owner: {v.phone}
+                {t.marshalCall} {v.phone}
               </a>
             </div>
           ))

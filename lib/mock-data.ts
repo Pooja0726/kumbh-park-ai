@@ -45,14 +45,7 @@ export const INITIAL_ZONES: ParkingZone[] = [
     cols: 6,
     shuttleStop: "Gate 1 Shuttle Bay",
     walkMinutesToGhat: 12,
-    slots: buildSlots(
-      "zone-a",
-      4,
-      6,
-      ["UP32AB1234@zone-a-R1C2", "UP70CX5678@zone-a-R2C4", "UP14DE9012@zone-a-R3C1"],
-      ["UP32AB1234@zone-a-R1C2"],
-      [5]
-    ),
+    slots: buildSlots("zone-a", 4, 6, [], [], [5]),
   },
   {
     id: "zone-b",
@@ -63,14 +56,7 @@ export const INITIAL_ZONES: ParkingZone[] = [
     cols: 8,
     shuttleStop: "Arail Shuttle Point B",
     walkMinutesToGhat: 8,
-    slots: buildSlots(
-      "zone-b",
-      3,
-      8,
-      ["UP75FG3456@zone-b-R1C3", "UP16HI7890@zone-b-R2C6"],
-      [],
-      [7]
-    ),
+    slots: buildSlots("zone-b", 3, 8, [], [], [7]),
   },
   {
     id: "zone-c",
@@ -81,6 +67,17 @@ export const INITIAL_ZONES: ParkingZone[] = [
     cols: 5,
     shuttleStop: "Jhusi Central Shuttle",
     walkMinutesToGhat: 15,
-    slots: buildSlots("zone-c", 5, 5, ["UP51JK2345@zone-c-R4C2"], [], [4]),
+    slots: buildSlots("zone-c", 5, 5, [], [], [4]),
+  },
+  {
+    id: "zone-d",
+    name: "Main Ghat Parking",
+    nameHindi: "मुख्य घाट पार्किंग",
+    destination: "Main Ghat",
+    rows: 4,
+    cols: 6,
+    shuttleStop: "Main Ghat Shuttle Bay",
+    walkMinutesToGhat: 5,
+    slots: buildSlots("zone-d", 4, 6, [], [], [5]),
   },
 ];

@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -8,47 +10,20 @@ import {
   Phone,
   Shield,
 } from "lucide-react";
-
-const features = [
-  {
-    icon: Camera,
-    title: "ANPR Entry Gate",
-    titleHi: "नंबर प्लेट स्कैन",
-    desc: "Scan vehicle plates at entry, register phone number, and get instant parking assignment.",
-  },
-  {
-    icon: AlertTriangle,
-    title: "Mis-park Detection",
-    titleHi: "गलत पार्किंग पहचान",
-    desc: "AI monitors every slot. Blocked aisles and fire lanes trigger automatic owner alerts.",
-  },
-  {
-    icon: Phone,
-    title: "Tiered Auto-Alerts",
-    titleHi: "स्वचालित सूचना",
-    desc: "SMS → WhatsApp → Auto-call → Marshal dispatch. Messages in Hindi and English.",
-  },
-  {
-    icon: MapPin,
-    title: "Ghat Route Guide",
-    titleHi: "घाट मार्गदर्शन",
-    desc: "After parking, pilgrims get walking time, shuttle stops, and least-congested routes.",
-  },
-  {
-    icon: Bus,
-    title: "Multi-Zone Orchestration",
-    titleHi: "बहु-क्षेत्र प्रबंधन",
-    desc: "Live occupancy across all lots. Redirect traffic before zones hit capacity.",
-  },
-  {
-    icon: Shield,
-    title: "Command Dashboard",
-    titleHi: "कमांड डैशबोर्ड",
-    desc: "Real-time heatmaps, violation feed, and analytics for traffic authorities.",
-  },
-];
+import { useT } from "@/lib/i18n";
 
 export default function HomePage() {
+  const t = useT();
+
+  const features = [
+    { icon: Camera, title: t.feat1Title, desc: t.feat1Desc },
+    { icon: AlertTriangle, title: t.feat2Title, desc: t.feat2Desc },
+    { icon: Phone, title: t.feat3Title, desc: t.feat3Desc },
+    { icon: MapPin, title: t.feat4Title, desc: t.feat4Desc },
+    { icon: Bus, title: t.feat5Title, desc: t.feat5Desc },
+    { icon: Shield, title: t.feat6Title, desc: t.feat6Desc },
+  ];
+
   return (
     <div>
       <section className="relative overflow-hidden bg-gradient-to-br from-kumbh-600 via-sacred-600 to-kumbh-800 text-white">
@@ -58,48 +33,47 @@ export default function HomePage() {
         </div>
         <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
           <p className="mb-3 text-sm font-medium text-kumbh-200">
-            महाकुंभ 2025 · Transportation & Mobility
+            {t.heroBadge}
           </p>
           <h1 className="max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-            KumbhPark AI
+            {t.heroTitle}
           </h1>
-          <p className="mt-2 text-xl text-kumbh-100">स्मार्ट पार्किंग · सुरक्षित आवागमन</p>
+          <p className="mt-2 text-xl text-kumbh-100">{t.heroSubtitle}</p>
           <p className="mt-6 max-w-2xl text-lg text-kumbh-50">
-            Intelligent parking management for millions of pilgrims. Scan, park, get guided
-            to the ghat — with automatic alerts when your vehicle causes congestion.
+            {t.heroDesc}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/entry"
               className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 font-semibold text-kumbh-800 shadow-lg transition hover:bg-kumbh-50"
             >
-              Register Vehicle
+              {t.heroCta1}
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               href="/dashboard"
               className="inline-flex items-center gap-2 rounded-xl border-2 border-white/40 px-6 py-3 font-semibold text-white transition hover:bg-white/10"
             >
-              Authority Dashboard
+              {t.heroCta2}
             </Link>
             <Link
               href="/lots"
               className="inline-flex items-center gap-2 rounded-xl border-2 border-white/40 px-6 py-3 font-semibold text-white transition hover:bg-white/10"
             >
-              View Live Lots
+              {t.heroCta3}
             </Link>
           </div>
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-        <h2 className="text-2xl font-bold text-gray-900">How It Works</h2>
-        <p className="mt-1 text-gray-600">तीन आसान कदम · Three simple steps</p>
+        <h2 className="text-2xl font-bold text-gray-900">{t.howItWorks}</h2>
+        <p className="mt-1 text-gray-600">{t.howItWorksSub}</p>
         <div className="mt-8 grid gap-6 md:grid-cols-3">
           {[
-            { step: "1", title: "Scan & Register", desc: "Camera reads plate. Enter phone + destination ghat." },
-            { step: "2", title: "Park & Get Pass", desc: "Assigned slot + QR pass with shuttle and walking route." },
-            { step: "3", title: "Auto-Monitored", desc: "Mis-park? You get SMS, call, and marshal support automatically." },
+            { step: "1", title: t.step1Title, desc: t.step1Desc },
+            { step: "2", title: t.step2Title, desc: t.step2Desc },
+            { step: "3", title: t.step3Title, desc: t.step3Desc },
           ].map((item) => (
             <div
               key={item.step}
@@ -117,7 +91,7 @@ export default function HomePage() {
 
       <section className="bg-kumbh-50/50 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <h2 className="text-2xl font-bold text-gray-900">Platform Features</h2>
+          <h2 className="text-2xl font-bold text-gray-900">{t.platformFeatures}</h2>
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((f) => (
               <div
@@ -126,7 +100,6 @@ export default function HomePage() {
               >
                 <f.icon className="h-8 w-8 text-kumbh-600" />
                 <h3 className="mt-3 font-semibold text-gray-900">{f.title}</h3>
-                <p className="text-sm text-kumbh-700">{f.titleHi}</p>
                 <p className="mt-2 text-sm text-gray-600">{f.desc}</p>
               </div>
             ))}
@@ -136,15 +109,15 @@ export default function HomePage() {
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
         <div className="rounded-2xl bg-gradient-to-r from-kumbh-700 to-sacred-600 p-8 text-center text-white sm:p-12">
-          <h2 className="text-2xl font-bold">Ready to enter the parking zone?</h2>
+          <h2 className="text-2xl font-bold">{t.ctaTitle}</h2>
           <p className="mt-2 text-kumbh-100">
-            पार्किंग जोन में प्रवेश के लिए वाहन पंजीकरण करें
+            {t.ctaSub}
           </p>
           <Link
             href="/entry"
             className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-8 py-3 font-semibold text-kumbh-800 shadow-lg hover:bg-kumbh-50"
           >
-            Start Entry Registration
+            {t.ctaButton}
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>

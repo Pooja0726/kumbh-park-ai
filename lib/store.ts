@@ -24,20 +24,103 @@ interface Store {
   registrations: VehicleRegistration[];
   violations: Violation[];
   notifications: NotificationLog[];
+  seeded: boolean;
 }
 
-const g = globalThis as typeof globalThis & { __kumbhStore?: Store };
+const g = globalThis as typeof globalThis & { __parkingStore?: Store };
 
 function getStore(): Store {
-  if (!g.__kumbhStore) {
-    g.__kumbhStore = {
+  if (!g.__parkingStore) {
+    g.__parkingStore = {
       zones: structuredClone(INITIAL_ZONES),
       registrations: [],
       violations: [],
       notifications: [],
+      seeded: false,
     };
   }
-  return g.__kumbhStore;
+  // Auto-seed on first access
+  if (!g.__parkingStore.seeded) {
+    g.__parkingStore.seeded = true;
+    seedInitialData(g.__parkingStore);
+  }
+  return g.__parkingStore;
+}
+
+/**
+ * Seed the store with realistic initial data so the dashboard
+ * shows real-time data immediately without manual registration.
+ */
+function seedInitialData(store: Store) {
+  const seedVehicles = [
+    { plate: "UP32AB1234", phone: "9876543210", dest: "Sangam Ghat" as Destination, lang: "hi" as const },
+    { plate: "UP70CX5678", phone: "9123456780", dest: "Main Ghat" as Destination, lang: "en" as const },
+    { plate: "UP14DE9012", phone: "9988776655", dest: "Arail Ghat" as Destination, lang: "hi" as const },
+    { plate: "DL01MN3456", phone: "8877665544", dest: "Sangam Ghat" as Destination, lang: "en" as const },
+    { plate: "MH12PQ7890", phone: "7766554433", dest: "Main Ghat" as Destination, lang: "en" as const },
+    { plate: "RJ14RS2345", phone: "6655443322", dest: "Jhusi Parking Hub" as Destination, lang: "hi" as const },
+  ];
+
+  // Register seed vehicles
+  seedVehicles.forEach((v, index) => {
+    const plate = normalizePlate(v.plate);
+    const assignment = assignBestZone(store.zones, v.dest);
+    if (!assignment) return;
+
+    const { zone, slot } = assignment;
+    const zoneRef = store.zones.find((z) => z.id === zone.id)!;
+    const slotRef = zoneRef.slots.find((s) => s.id === slot.id)!;
+    slotRef.status = "occupied";
+    slotRef.vehicleNumber = plate;
+
+    const registration = buildRegistration(plate, v.phone, v.dest, zoneRef, slotRef, v.lang);
+    // Ensure unique IDs (Date.now() can collide in a tight loop)
+    registration.id = `reg-seed-${index}`;
+    store.registrations.push(registration);
+  });
+
+  // Create seed violations (mis-park + fire-lane)
+  const misParkedReg = store.registrations[1]; // UP70CX5678
+  if (misParkedReg) {
+    const zone = store.zones.find((z) => z.id === misParkedReg.zoneId)!;
+    const slot = zone.slots.find((s) => s.id === misParkedReg.slotId)!;
+    slot.status = "mis-parked";
+
+    const violation1 = createViolation(
+      misParkedReg.vehicleNumber,
+      misParkedReg.phone,
+      misParkedReg.zoneId,
+      misParkedReg.slotId,
+      "mis-parked",
+      "sms"
+    );
+    store.violations.push(violation1);
+    const logs1 = dispatchAlert(violation1, "sms");
+    store.notifications.push(...logs1);
+  }
+
+  const fireLaneReg = store.registrations[3]; // DL01MN3456
+  if (fireLaneReg) {
+    const zone = store.zones.find((z) => z.id === fireLaneReg.zoneId)!;
+    // Find a fire lane slot and mark it as blocked
+    const fireSlot = zone.slots.find((s) => s.isFireLane && s.status === "free");
+    if (fireSlot) {
+      fireSlot.status = "blocked";
+      fireSlot.vehicleNumber = fireLaneReg.vehicleNumber;
+
+      const violation2 = createViolation(
+        fireLaneReg.vehicleNumber,
+        fireLaneReg.phone,
+        zone.id,
+        fireSlot.id,
+        "fire-lane",
+        "call"
+      );
+      store.violations.push(violation2);
+      const logs2 = dispatchAlert(violation2, "call");
+      store.notifications.push(...logs2);
+    }
+  }
 }
 
 export function getZones(): ParkingZone[] {
