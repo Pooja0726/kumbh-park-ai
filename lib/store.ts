@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import { INITIAL_ZONES } from "./mock-data";
 import {
   assignBestZone,
@@ -28,21 +30,54 @@ interface Store {
 }
 
 const g = globalThis as typeof globalThis & { __parkingStore?: Store };
+const STORE_FILE = path.join(process.cwd(), ".next", "parking-store.json");
+
+function loadFromFile(): Store | null {
+  try {
+    if (fs.existsSync(STORE_FILE)) {
+      const data = fs.readFileSync(STORE_FILE, "utf8");
+      return JSON.parse(data);
+    }
+  } catch (e) {
+    console.error("Error loading parking store:", e);
+  }
+  return null;
+}
+
+export function saveToFile() {
+  try {
+    const store = g.__parkingStore;
+    if (!store) return;
+    const dir = path.dirname(STORE_FILE);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(STORE_FILE, JSON.stringify(store, null, 2), "utf8");
+  } catch (e) {
+    console.error("Error saving parking store:", e);
+  }
+}
 
 function getStore(): Store {
   if (!g.__parkingStore) {
-    g.__parkingStore = {
-      zones: structuredClone(INITIAL_ZONES),
-      registrations: [],
-      violations: [],
-      notifications: [],
-      seeded: false,
-    };
+    const loaded = loadFromFile();
+    if (loaded) {
+      g.__parkingStore = loaded;
+    } else {
+      g.__parkingStore = {
+        zones: structuredClone(INITIAL_ZONES),
+        registrations: [],
+        violations: [],
+        notifications: [],
+        seeded: false,
+      };
+    }
   }
   // Auto-seed on first access
   if (!g.__parkingStore.seeded) {
     g.__parkingStore.seeded = true;
     seedInitialData(g.__parkingStore);
+    saveToFile();
   }
   return g.__parkingStore;
 }
@@ -59,6 +94,7 @@ function seedInitialData(store: Store) {
     { plate: "DL01MN3456", phone: "8877665544", dest: "Sangam Ghat" as Destination, lang: "en" as const },
     { plate: "MH12PQ7890", phone: "7766554433", dest: "Main Ghat" as Destination, lang: "en" as const },
     { plate: "RJ14RS2345", phone: "6655443322", dest: "Jhusi Parking Hub" as Destination, lang: "hi" as const },
+    { plate: "UP32AB0123", phone: "9876543210", dest: "Sangam Ghat" as Destination, lang: "en" as const, passCode: "PARK-0123-IZM9" },
   ];
 
   // Register seed vehicles
@@ -76,6 +112,9 @@ function seedInitialData(store: Store) {
     const registration = buildRegistration(plate, v.phone, v.dest, zoneRef, slotRef, v.lang);
     // Ensure unique IDs (Date.now() can collide in a tight loop)
     registration.id = `reg-seed-${index}`;
+    if ("passCode" in v && v.passCode) {
+      registration.passCode = v.passCode;
+    }
     store.registrations.push(registration);
   });
 
@@ -189,6 +228,7 @@ export function registerVehicle(input: {
     input.language
   );
   store.registrations.push(registration);
+  saveToFile();
   return registration;
 }
 
@@ -225,7 +265,7 @@ export function reportViolation(input: {
   store.violations.unshift(violation);
   const logs = dispatchAlert(violation, "sms");
   store.notifications.unshift(...logs);
-
+  saveToFile();
   return violation;
 }
 
@@ -239,6 +279,7 @@ export function escalateViolation(violationId: string): Violation | { error: str
   violation.tier = nextTier;
   const logs = dispatchAlert(violation, nextTier);
   store.notifications.unshift(...logs);
+  saveToFile();
   return violation;
 }
 
@@ -253,7 +294,7 @@ export function resolveViolation(violationId: string): Violation | { error: stri
   const zone = store.zones.find((z) => z.id === violation.zoneId);
   const slot = zone?.slots.find((s) => s.id === violation.slotId);
   if (slot) slot.status = "occupied";
-
+  saveToFile();
   return violation;
 }
 
