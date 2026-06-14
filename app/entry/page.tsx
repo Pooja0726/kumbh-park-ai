@@ -68,6 +68,26 @@ export default function EntryPage() {
           toast.error(`Twilio Error: ${data.sms.error}`, { duration: 6000 });
         }
       }
+
+      // Save full registration to localStorage for client-side persistence (survives Vercel serverless recycles)
+      try {
+        const saved = JSON.parse(localStorage.getItem("sps-passes") || "{}");
+        saved[data.passCode.toUpperCase()] = {
+          id: `reg-${Date.now()}`,
+          vehicleNumber: vehicleNumber.toUpperCase().replace(/\s+/g, "").trim(),
+          phone,
+          destination,
+          zoneId: data.zoneId,
+          slotId: data.slotId,
+          language: lang,
+          registeredAt: new Date().toISOString(),
+          passCode: data.passCode,
+        };
+        localStorage.setItem("sps-passes", JSON.stringify(saved));
+      } catch (e) {
+        console.error("Failed to save pass to localStorage:", e);
+      }
+
       sessionStorage.setItem("parking-pass", data.passCode);
     } catch {
       toast.error("Network error. Please try again.");

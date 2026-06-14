@@ -32,6 +32,28 @@ function MyPassContent() {
       const res = await fetch(`/api/pass?code=${encodeURIComponent(code)}`);
       const data = await res.json();
       if (!res.ok) {
+        // Fallback to localStorage if the serverless container recycled the in-memory database
+        try {
+          const saved = JSON.parse(localStorage.getItem("sps-passes") || "{}");
+          const localPass = saved[code.toUpperCase().trim()];
+          if (localPass) {
+            setRegistration(localPass);
+            // Fetch zones dynamically to get correct name, walk time and shuttle stop
+            const zonesRes = await fetch("/api/zones");
+            const zonesData = await zonesRes.json();
+            const foundZone = (zonesData.zones ?? []).find(
+              (z: ParkingZone) => z.id === localPass.zoneId
+            );
+            if (foundZone) {
+              setZone(foundZone);
+              setLoading(false);
+              return;
+            }
+          }
+        } catch (localError) {
+          console.error("Local storage lookup failed:", localError);
+        }
+
         setError(data.error ?? "Pass not found");
         setRegistration(null);
         return;
