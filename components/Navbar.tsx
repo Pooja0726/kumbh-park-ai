@@ -1,26 +1,68 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Car, Globe, HelpCircle, LayoutDashboard, MapPin, QrCode, ScanLine } from "lucide-react";
+import { Car, Globe, HelpCircle, LayoutDashboard, MapPin, QrCode, ScanLine, Lock, Unlock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage, useT } from "@/lib/i18n";
 import { HelpModal } from "@/components/HelpModal";
+import { toast } from "sonner";
 
 export function Navbar() {
   const pathname = usePathname();
   const { lang, setLang } = useLanguage();
   const t = useT();
   const [helpOpen, setHelpOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  const links = [
+  useEffect(() => {
+    setIsAdmin(sessionStorage.getItem("sps-admin-mode") === "true");
+
+    const handleLogin = () => setIsAdmin(true);
+    const handleLogout = () => setIsAdmin(false);
+
+    window.addEventListener("sps-admin-login", handleLogin);
+    window.addEventListener("sps-admin-logout", handleLogout);
+
+    return () => {
+      window.removeEventListener("sps-admin-login", handleLogin);
+      window.removeEventListener("sps-admin-logout", handleLogout);
+    };
+  }, []);
+
+  const links: { href: string; label: string; icon: any }[] = [
     { href: "/", label: t.navHome, icon: Car },
     { href: "/entry", label: t.navEntry, icon: ScanLine },
     { href: "/lots", label: t.navLots, icon: MapPin },
     { href: "/my-pass", label: t.navPass, icon: QrCode },
-    { href: "/dashboard", label: t.navDashboard, icon: LayoutDashboard },
   ];
+
+  if (isAdmin) {
+    links.push({ href: "/dashboard", label: t.navDashboard, icon: LayoutDashboard });
+  }
+
+  function handleAdminToggle() {
+    if (isAdmin) {
+      sessionStorage.removeItem("sps-admin-mode");
+      setIsAdmin(false);
+      window.dispatchEvent(new Event("sps-admin-logout"));
+      toast.success("Admin Mode Deactivated");
+      if (pathname.startsWith("/dashboard")) {
+        window.location.href = "/";
+      }
+    } else {
+      const pin = prompt("Enter Admin PIN to access traffic controller center:");
+      if (pin === "1234") {
+        sessionStorage.setItem("sps-admin-mode", "true");
+        setIsAdmin(true);
+        window.dispatchEvent(new Event("sps-admin-login"));
+        toast.success("Admin Mode Activated");
+      } else if (pin !== null) {
+        toast.error("Incorrect PIN. Access Denied.");
+      }
+    }
+  }
 
   return (
     <>
@@ -74,6 +116,22 @@ export function Navbar() {
             >
               <HelpCircle className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">{t.navHelp}</span>
+            </button>
+
+            {/* Admin Toggle */}
+            <button
+              type="button"
+              onClick={handleAdminToggle}
+              className={cn(
+                "flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-colors",
+                isAdmin
+                  ? "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 animate-pulse"
+                  : "border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
+              )}
+              title={isAdmin ? "Exit Admin Mode" : "Enter Admin Mode (Traffic Authority)"}
+            >
+              {isAdmin ? <Unlock className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
+              <span className="hidden sm:inline">{isAdmin ? "Admin Active" : "Admin"}</span>
             </button>
           </div>
         </div>

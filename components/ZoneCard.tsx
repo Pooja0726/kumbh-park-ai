@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Bus, MapPin, Users } from "lucide-react";
 import type { ParkingZone } from "@/lib/types";
@@ -13,11 +14,25 @@ export function ZoneCard({ zone }: { zone: ParkingZone }) {
   const occ = getZoneOccupancy(zone);
   const zoneName = lang === "hi" ? zone.nameHindi : zone.name;
 
-  return (
-    <Link
-      href={`/dashboard/zone/${zone.id}`}
-      className="block rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
-    >
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    setIsAdmin(sessionStorage.getItem("sps-admin-mode") === "true");
+
+    const handleLogin = () => setIsAdmin(true);
+    const handleLogout = () => setIsAdmin(false);
+
+    window.addEventListener("sps-admin-login", handleLogin);
+    window.addEventListener("sps-admin-logout", handleLogout);
+
+    return () => {
+      window.removeEventListener("sps-admin-login", handleLogin);
+      window.removeEventListener("sps-admin-logout", handleLogout);
+    };
+  }, []);
+
+  const cardContent = (
+    <>
       <div className="flex items-start justify-between">
         <div>
           <h3 className="font-semibold text-gray-900">{zoneName}</h3>
@@ -53,6 +68,23 @@ export function ZoneCard({ zone }: { zone: ParkingZone }) {
           {t.zoneShuttle}
         </span>
       </div>
-    </Link>
+    </>
+  );
+
+  if (isAdmin) {
+    return (
+      <Link
+        href={`/dashboard/zone/${zone.id}`}
+        className="block rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:border-kumbh-200 cursor-pointer"
+      >
+        {cardContent}
+      </Link>
+    );
+  }
+
+  return (
+    <div className="block rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+      {cardContent}
+    </div>
   );
 }
