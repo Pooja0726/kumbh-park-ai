@@ -64,6 +64,9 @@ export default function EntryPage() {
         toast.success("Vehicle registered! (SMS simulated — see note below)");
       } else {
         toast.success("Vehicle registered! Parking pass generated.");
+        if (data.sms?.mode === "live" && data.sms?.error) {
+          toast.error(`Twilio Error: ${data.sms.error}`, { duration: 6000 });
+        }
       }
       sessionStorage.setItem("parking-pass", data.passCode);
     } catch {

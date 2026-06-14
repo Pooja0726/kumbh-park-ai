@@ -53,6 +53,9 @@ export default function ZoneDetailPage() {
         `SMS + WhatsApp sent to ${v.phone} for ${v.vehicleNumber}`
       );
       toast.error(`Alert: ${v.vehicleNumber} — ${type}`);
+      if (data.sms && !data.sms.sent && data.sms.mode === "live" && data.sms.error) {
+        toast.error(`Twilio Error: ${data.sms.error}`, { duration: 6000 });
+      }
       fetchZone();
     } else {
       toast.error(data.error);

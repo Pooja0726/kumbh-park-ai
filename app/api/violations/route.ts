@@ -49,6 +49,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: result.error }, { status: 400 });
   }
 
+  let sms = null;
   if (action === "escalate") {
     const msg =
       result.tier === "call"
@@ -56,8 +57,8 @@ export async function PATCH(request: Request) {
         : result.tier === "marshal"
           ? `मार्शल भेजा गया: ${result.zoneId} ${result.slotId}`
           : result.messageHindi;
-    await sendSms(result.phone, msg);
+    sms = await sendSms(result.phone, msg);
   }
 
-  return NextResponse.json({ violation: result });
+  return NextResponse.json({ violation: result, sms });
 }

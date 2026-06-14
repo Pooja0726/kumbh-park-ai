@@ -1,5 +1,7 @@
 # Smart Parking System
 
+Live Demo: [https://kumbh-park-ai.vercel.app/](https://kumbh-park-ai.vercel.app/)
+
 AI-powered smart parking management system — ANPR entry, mis-park detection, tiered owner alerts, and authority command dashboard.
 
 ## Features

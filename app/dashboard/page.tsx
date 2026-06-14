@@ -49,6 +49,9 @@ export default function DashboardPage() {
     const data = await res.json();
     if (res.ok) {
       toast.success(`Alert escalated to ${data.violation.tier}`);
+      if (data.sms && !data.sms.sent && data.sms.mode === "live" && data.sms.error) {
+        toast.error(`Twilio Error: ${data.sms.error}`, { duration: 6000 });
+      }
       fetchData();
     } else {
       toast.error(data.error);
