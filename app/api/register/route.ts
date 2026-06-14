@@ -29,8 +29,8 @@ export async function POST(request: Request) {
 
   const smsText =
     language === "hi"
-      ? `महाकुंभ पार्किंग: वाहन ${result.vehicleNumber} पंजीकृत। पास: ${result.passCode}। स्लॉट: ${result.slotId}।`
-      : `KumbhPark: Vehicle ${result.vehicleNumber} registered. Pass: ${result.passCode}. Slot: ${result.slotId}.`;
+      ? `स्मार्ट पार्किंग: वाहन ${result.vehicleNumber} पंजीकृत। पास: ${result.passCode}। स्लॉट: ${result.slotId}।`
+      : `SmartParking: Vehicle ${result.vehicleNumber} registered. Pass: ${result.passCode}. Slot: ${result.slotId}.`;
 
   const sms = await sendSms(phone, smsText);
 
