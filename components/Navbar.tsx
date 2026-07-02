@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Car, Globe, HelpCircle, MapPin, QrCode, ScanLine } from "lucide-react";
+import { Car, Globe, HelpCircle, MapPin, QrCode, ScanLine, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage, useT } from "@/lib/i18n";
 import { HelpModal } from "@/components/HelpModal";
@@ -14,7 +14,7 @@ export function Navbar() {
   const t = useT();
   const [helpOpen, setHelpOpen] = useState(false);
 
-  const links: { href: string; label: string; icon: any }[] = [
+  const links: { href: string; label: string; icon: LucideIcon }[] = [
     { href: "/", label: t.navHome, icon: Car },
     { href: "/entry", label: t.navEntry, icon: ScanLine },
     { href: "/lots", label: t.navLots, icon: MapPin },
