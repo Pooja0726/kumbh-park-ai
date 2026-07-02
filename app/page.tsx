@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -15,22 +14,6 @@ import { useT } from "@/lib/i18n";
 
 export default function HomePage() {
   const t = useT();
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    setIsAdmin(sessionStorage.getItem("sps-admin-mode") === "true");
-
-    const handleLogin = () => setIsAdmin(true);
-    const handleLogout = () => setIsAdmin(false);
-
-    window.addEventListener("sps-admin-login", handleLogin);
-    window.addEventListener("sps-admin-logout", handleLogout);
-
-    return () => {
-      window.removeEventListener("sps-admin-login", handleLogin);
-      window.removeEventListener("sps-admin-logout", handleLogout);
-    };
-  }, []);
 
   const features = [
     { icon: Camera, title: t.feat1Title, desc: t.feat1Desc },
@@ -67,14 +50,6 @@ export default function HomePage() {
               {t.heroCta1}
               <ArrowRight className="h-4 w-4" />
             </Link>
-            {isAdmin && (
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center gap-2 rounded-xl border-2 border-white/40 px-6 py-3 font-semibold text-white transition hover:bg-white/10"
-              >
-                {t.heroCta2}
-              </Link>
-            )}
             <Link
               href="/lots"
               className="inline-flex items-center gap-2 rounded-xl border-2 border-white/40 px-6 py-3 font-semibold text-white transition hover:bg-white/10"
